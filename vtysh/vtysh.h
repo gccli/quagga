@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Zebra; see the file COPYING.  If not, write to the Free
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.  
+ * 02111-1307, USA.
  */
 
 #ifndef VTYSH_H
@@ -41,7 +41,7 @@
 
 void vtysh_init_vty (void);
 void vtysh_init_cmd (void);
-extern int vtysh_connect_all (const char *optional_daemon_name);
+extern int vtysh_connect_all (const char *optional_daemon_name, const char *netns);
 void vtysh_readline_init (void);
 void vtysh_user_init (void);
 

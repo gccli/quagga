@@ -52,7 +52,7 @@
 #include "ospfd/ospf_vty.h"
 
 /* ospfd privileges */
-zebra_capabilities_t _caps_p [] = 
+zebra_capabilities_t _caps_p [] =
 {
   ZCAP_NET_RAW,
   ZCAP_BIND,
@@ -77,7 +77,7 @@ struct zebra_privs_t ospfd_privs =
 char config_default[] = SYSCONFDIR OSPF_DEFAULT_CONFIG;
 
 /* OSPFd options. */
-struct option longopts[] = 
+struct option longopts[] =
 {
   { "daemon",      no_argument,       NULL, 'd'},
   { "config_file", required_argument, NULL, 'f'},
@@ -113,7 +113,7 @@ usage (char *progname, int status)
   if (status != 0)
     fprintf (stderr, "Try `%s --help' for more information.\n", progname);
   else
-    {    
+    {
       printf ("Usage : %s [OPTION...]\n\
 Daemon which manages OSPF.\n\n\
 -d, --daemon       Runs in daemon mode\n\
@@ -135,7 +135,7 @@ Report bugs to %s\n", progname, ZEBRA_BUG_ADDRESS);
 }
 
 /* SIGHUP handler. */
-static void 
+static void
 sighup (void)
 {
   zlog (NULL, LOG_INFO, "SIGHUP received");
@@ -165,7 +165,7 @@ struct quagga_signal_t ospf_signals[] =
   {
     .signal = SIGUSR1,
     .handler = &sigusr1,
-  },  
+  },
   {
     .signal = SIGINT,
     .handler = &sigint,
@@ -183,11 +183,12 @@ main (int argc, char **argv)
   char *p;
   char *vty_addr = NULL;
   int vty_port = OSPF_VTY_PORT;
+  const char *vty_path = ZEBRA_VTYSH_PATH;
   int daemon_mode = 0;
   char *config_file = NULL;
   char *progname;
   int dryrun = 0;
-
+  char netns[32] = {0};
   /* Set umask before anything for security */
   umask (0027);
 
@@ -199,16 +200,24 @@ main (int argc, char **argv)
   /* get program name */
   progname = ((p = strrchr (argv[0], '/')) ? ++p : argv[0]);
 
-  while (1) 
+  if (zclient_get_netns(netns, sizeof(netns)) == 0 && netns[0] != 0) {
+      printf("OSPFD running in netns: %s\n", netns);
+      config_file = zclient_get_config(netns, "ospfd");
+      pid_file = zclient_get_pidfile(netns, "ospfd");
+      zclient_serv_path_set(zclient_get_socket(netns, "zebra"));
+      vty_path = zclient_get_vtysh(netns, "ospfd");
+  }
+
+  while (1)
     {
       int opt;
 
       opt = getopt_long (argc, argv, "df:i:z:hA:P:u:g:avC", longopts, 0);
-    
+
       if (opt == EOF)
 	break;
 
-      switch (opt) 
+      switch (opt)
 	{
 	case 0:
 	  break;
@@ -230,11 +239,11 @@ main (int argc, char **argv)
 	case 'P':
           /* Deal with atoi() returning 0 on failure, and ospfd not
              listening on ospfd port... */
-          if (strcmp(optarg, "0") == 0) 
+          if (strcmp(optarg, "0") == 0)
             {
               vty_port = 0;
               break;
-            } 
+            }
           vty_port = atoi (optarg);
           if (vty_port <= 0 || vty_port > 0xffff)
             vty_port = OSPF_VTY_PORT;
@@ -309,14 +318,14 @@ main (int argc, char **argv)
   ospf_snmp_init ();
 #endif /* HAVE_SNMP */
   ospf_opaque_init ();
-  
+
   /* Get configuration file. */
   vty_read_config (config_file, config_default);
 
   /* Start execution only if not in dry-run mode */
   if (dryrun)
     return(0);
-  
+
   /* Change to the daemon program. */
   if (daemon_mode && daemon (0, 0) < 0)
     {
@@ -328,14 +337,13 @@ main (int argc, char **argv)
   pid_output (pid_file);
 
   /* Create VTY socket */
-  vty_serv_sock (vty_addr, vty_port, OSPF_VTYSH_PATH);
+  vty_serv_sock (vty_addr, vty_port, vty_path);
 
   /* Print banner. */
   zlog_notice ("OSPFd %s starting: vty@%d", QUAGGA_VERSION, vty_port);
 
   thread_main (master);
-  
+
   /* Not reached. */
   return (0);
 }
-

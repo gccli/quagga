@@ -45,7 +45,7 @@
 
 #define QUAGGA_COPYRIGHT "Copyright 1996-2005 Kunihiro Ishiguro, et al."
 
-#define QUAGGA_CONFIG_ARGS ""
+#define QUAGGA_CONFIG_ARGS "--prefix=/usr --sysconfdir=/etc --localstatedir=/etc/quagga"
 
 pid_t pid_output (const char *);
 

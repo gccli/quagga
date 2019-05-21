@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Zebra; see the file COPYING.  If not, write to the Free
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.  
+ * 02111-1307, USA.
  */
 
 #include <zebra.h>
@@ -66,7 +66,7 @@ u_int32_t nl_rcvbufsize = 0;
 #endif /* HAVE_NETLINK */
 
 /* Command line options. */
-struct option longopts[] = 
+struct option longopts[] =
 {
   { "batch",       no_argument,       NULL, 'b'},
   { "daemon",      no_argument,       NULL, 'd'},
@@ -89,7 +89,7 @@ struct option longopts[] =
   { 0 }
 };
 
-zebra_capabilities_t _caps_p [] = 
+zebra_capabilities_t _caps_p [] =
 {
   ZCAP_NET_ADMIN,
   ZCAP_SYS_ADMIN,
@@ -124,7 +124,7 @@ usage (char *progname, int status)
   if (status != 0)
     fprintf (stderr, "Try `%s --help' for more information.\n", progname);
   else
-    {    
+    {
       printf ("Usage : %s [OPTION...]\n\n"\
 	      "Daemon which manages kernel routing table management and "\
 	      "redistribution between different routing protocols.\n\n"\
@@ -156,7 +156,7 @@ usage (char *progname, int status)
 }
 
 /* SIGHUP handler. */
-static void 
+static void
 sighup (void)
 {
   zlog_info ("SIGHUP received");
@@ -189,8 +189,8 @@ sigusr1 (void)
 
 struct quagga_signal_t zebra_signals[] =
 {
-  { 
-    .signal = SIGHUP, 
+  {
+    .signal = SIGHUP,
     .handler = &sighup,
   },
   {
@@ -290,6 +290,7 @@ main (int argc, char **argv)
   char *p;
   char *vty_addr = NULL;
   int vty_port = ZEBRA_VTY_PORT;
+  const char *vty_path = ZEBRA_VTYSH_PATH;
   int dryrun = 0;
   int batch_mode = 0;
   int daemon_mode = 0;
@@ -297,7 +298,7 @@ main (int argc, char **argv)
   char *progname;
   char *zserv_path = NULL;
   char *fpm_format = NULL;
-
+  char netns[32] = {0};
   /* Set umask before anything for security */
   umask (0027);
 
@@ -306,12 +307,19 @@ main (int argc, char **argv)
 
   zlog_default = openzlog (progname, ZLOG_ZEBRA,
 			   LOG_CONS|LOG_NDELAY|LOG_PID, LOG_DAEMON);
+  if (zclient_get_netns(netns, sizeof(netns)) == 0 && netns[0] != 0) {
+      printf("Zebra running in netns: %s\n", netns);
+      config_file = zclient_get_config(netns, "zebra");
+      pid_file = zclient_get_pidfile(netns, "zebra");
+      zserv_path = zclient_get_socket(netns, "zebra");
+      vty_path = zclient_get_vtysh(netns, "zebra");
+  }
 
-  while (1) 
+  while (1)
     {
       int opt;
-  
-#ifdef HAVE_NETLINK  
+
+#ifdef HAVE_NETLINK
       opt = getopt_long (argc, argv, "bdkf:F:i:z:hA:P:ru:g:vs:C", longopts, 0);
 #else
       opt = getopt_long (argc, argv, "bdkf:F:i:z:hA:P:ru:g:vC", longopts, 0);
@@ -320,7 +328,7 @@ main (int argc, char **argv)
       if (opt == EOF)
 	break;
 
-      switch (opt) 
+      switch (opt)
 	{
 	case 0:
 	  break;
@@ -353,11 +361,11 @@ main (int argc, char **argv)
 	case 'P':
 	  /* Deal with atoi() returning 0 on failure, and zebra not
 	     listening on zebra port... */
-	  if (strcmp(optarg, "0") == 0) 
+	  if (strcmp(optarg, "0") == 0)
 	    {
 	      vty_port = 0;
 	      break;
-	    } 
+	    }
 	  vty_port = atoi (optarg);
 	  if (vty_port <= 0 || vty_port > 0xffff)
 	    vty_port = ZEBRA_VTY_PORT;
@@ -484,11 +492,11 @@ main (int argc, char **argv)
   zebra_zserv_socket_init (zserv_path);
 
   /* Make vty server socket. */
-  vty_serv_sock (vty_addr, vty_port, ZEBRA_VTYSH_PATH);
+  vty_serv_sock (vty_addr, vty_port, vty_path);
 
   /* Print banner. */
   zlog_notice ("Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
-  
+
   thread_main (zebrad.master);
 
   return 0;

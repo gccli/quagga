@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Zebra; see the file COPYING.  If not, write to the Free
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.  
+ * 02111-1307, USA.
  */
 
 #include <zebra.h>
@@ -33,6 +33,7 @@
 #include "getopt.h"
 #include "command.h"
 #include "memory.h"
+#include "zclient.h"
 
 #include "vtysh/vtysh.h"
 #include "vtysh/vtysh_user.h"
@@ -68,7 +69,7 @@ sigtstp (int sig)
 {
   /* Execute "end" command. */
   vtysh_execute ("end");
-  
+
   /* Initialize readline. */
   rl_initialize ();
   printf ("\n");
@@ -147,7 +148,7 @@ usage (int status)
 }
 
 /* VTY shell options, we use GNU getopt library. */
-struct option longopts[] = 
+struct option longopts[] =
 {
   { "boot",                 no_argument,             NULL, 'b'},
   /* For compatibility with older zebra/quagga versions */
@@ -173,10 +174,10 @@ vtysh_rl_gets ()
       free (line_read);
       line_read = NULL;
     }
-     
+
   /* Get a line from the user.  Change prompt according to node.  XXX. */
   line_read = readline (vtysh_prompt ());
-     
+
   /* If the line has any text in it, save it on the history. But only if
    * last command in history isn't the same one. */
   if (line_read && *line_read)
@@ -188,7 +189,7 @@ vtysh_rl_gets ()
 	append_history(1,history_file);
       }
     }
-     
+
   return (line_read);
 }
 
@@ -203,7 +204,7 @@ static void log_it(const char *line)
     user = "boot";
 
   strftime(tod, sizeof tod, "%Y%m%d-%H:%M.%S", tmp);
-  
+
   fprintf(logfile, "%s:%s %s\n", tod, user, line);
 }
 
@@ -224,6 +225,8 @@ main (int argc, char **argv, char **env)
   int echo_command = 0;
   int no_error = 0;
   char *homedir = NULL;
+  char *config_file = config_default;
+  char netns[32] = {0};
 
   /* Preserve name of myself. */
   progname = ((p = strrchr (argv[0], '/')) ? ++p : argv[0]);
@@ -233,14 +236,14 @@ main (int argc, char **argv, char **env)
       logfile = fopen(p, "a");
 
   /* Option handling. */
-  while (1) 
+  while (1)
     {
       opt = getopt_long (argc, argv, "be:c:d:nEhC", longopts, 0);
-    
+
       if (opt == EOF)
 	break;
 
-      switch (opt) 
+      switch (opt)
 	{
 	case 0:
 	  break;
@@ -297,13 +300,18 @@ main (int argc, char **argv, char **env)
 
   vty_init_vtysh ();
 
+  if (zclient_get_netns(netns, sizeof(netns)) == 0 && netns[0] != 0) {
+      printf("Vtysh running in netns: %s\n", netns);
+      config_file = zclient_get_config(netns, "vtysh");
+  }
+
   /* Read vtysh configuration file before connecting to daemons. */
-  vtysh_read_config (config_default);
+  vtysh_read_config (config_file);
 
   /* Start execution only if not in dry-run mode */
   if(dryrun)
     return(0);
-  
+
   /* Ignore error messages */
   if (no_error)
     freopen("/dev/null", "w", stdout);
@@ -312,7 +320,7 @@ main (int argc, char **argv, char **env)
   vtysh_auth ();
 
   /* Do not connect until we have passed authentication. */
-  if (vtysh_connect_all (daemon_name) <= 0)
+  if (vtysh_connect_all (daemon_name, netns) <= 0)
     {
       fprintf(stderr, "Exiting: failed to connect to any daemons.\n");
       exit(1);
@@ -359,7 +367,7 @@ main (int argc, char **argv, char **env)
 
 	      if (echo_command)
 		printf("%s%s\n", vtysh_prompt(), cmd->line);
-	      
+
 	      if (logfile)
 		log_it(cmd->line);
 
@@ -400,7 +408,7 @@ main (int argc, char **argv, char **env)
       history_truncate_file(history_file,1000);
       exit (0);
     }
-  
+
   /* Boot startup configuration file. */
   if (boot_flag)
     {

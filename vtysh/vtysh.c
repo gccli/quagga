@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Zebra; see the file COPYING.  If not, write to the Free
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.  
+ * 02111-1307, USA.
  */
 
 #include <zebra.h>
@@ -66,7 +66,7 @@ struct vtysh_client
 
 /* We need direct access to ripd to implement vtysh_exit_ripd_only. */
 static struct vtysh_client *ripd_client = NULL;
- 
+
 
 /* Using integrated config from Quagga.conf. Default is no. */
 int vtysh_writeconfig_integrated = 0;
@@ -125,7 +125,7 @@ vtysh_client_execute (struct vtysh_client *vclient, const char *line, FILE *fp)
       vclient_close (vclient);
       return CMD_SUCCESS;
     }
-	
+
   /* Allow enough room for buffer to read more than a few pages from socket. */
   bufsz = 5 * getpagesize() + 1;
   buf = XMALLOC(MTYPE_TMP, bufsz);
@@ -186,7 +186,7 @@ vtysh_client_execute (struct vtysh_client *vclient, const char *line, FILE *fp)
        else
          i = 0;
 
-       /* Count the numnulls */ 
+       /* Count the numnulls */
        while (i < nbytes && numnulls <3)
        {
          if (pbuf[i++] == '\0')
@@ -199,7 +199,7 @@ vtysh_client_execute (struct vtysh_client *vclient, const char *line, FILE *fp)
        pbuf += nbytes;
 
        /* See if a line exists in buffer, if so parse and consume it, and
-        * reset read position. If 3 nulls has been encountered consume the buffer before 
+        * reset read position. If 3 nulls has been encountered consume the buffer before
         * next read.
         */
        if (((eoln = strrchr(buf, '\n')) == NULL) && (numnulls<3))
@@ -218,10 +218,10 @@ vtysh_client_execute (struct vtysh_client *vclient, const char *line, FILE *fp)
        eoln++;
        left = (size_t)(buf + bufsz - eoln);
        /*
-        * This check is required since when a config line split between two consecutive reads, 
-        * then buf will have first half of config line and current read will bring rest of the 
-        * line. So in this case eoln will be 1 here, hence calculation of left will be wrong. 
-        * In this case we don't need to do memmove, because we have already seen 3 nulls.  
+        * This check is required since when a config line split between two consecutive reads,
+        * then buf will have first half of config line and current read will bring rest of the
+        * line. So in this case eoln will be 1 here, hence calculation of left will be wrong.
+        * In this case we don't need to do memmove, because we have already seen 3 nulls.
         */
        if(left < bufsz)
          memmove(buf, eoln, left);
@@ -241,7 +241,7 @@ vtysh_client_execute (struct vtysh_client *vclient, const char *line, FILE *fp)
   XFREE(MTYPE_TMP, buf);
   return ret;
 }
- 
+
 
 void
 vtysh_pager_init (void)
@@ -509,7 +509,7 @@ vtysh_rl_describe (void)
       vline = vector_init (1);
       vector_set (vline, NULL);
     }
-  else 
+  else
     if (rl_end && isspace ((int) rl_line_buffer[rl_end - 1]))
       vector_set (vline, NULL);
 
@@ -532,7 +532,7 @@ vtysh_rl_describe (void)
       rl_on_new_line ();
       return 0;
       break;
-    }  
+    }
 
   /* Get width of command string. */
   width = 0;
@@ -984,7 +984,7 @@ DEFUNSH (VTYSH_RIPD,
 {
   vty->node = KEYCHAIN_NODE;
   return CMD_SUCCESS;
-}	 
+}
 
 DEFUNSH (VTYSH_RIPD,
 	 key,
@@ -1079,7 +1079,7 @@ DEFUNSH (VTYSH_ALL,
 }
 
 DEFUNSH (VTYSH_ALL,
-	 vtysh_enable, 
+	 vtysh_enable,
 	 vtysh_enable_cmd,
 	 "enable",
 	 "Turn on privileged mode command\n")
@@ -1089,7 +1089,7 @@ DEFUNSH (VTYSH_ALL,
 }
 
 DEFUNSH (VTYSH_ALL,
-	 vtysh_disable, 
+	 vtysh_disable,
 	 vtysh_disable_cmd,
 	 "disable",
 	 "Turn off privileged mode command\n")
@@ -1360,7 +1360,7 @@ DEFSH (VTYSH_ZEBRA|VTYSH_RIPD|VTYSH_OSPFD,
        "description .LINE",
        "Interface specific description\n"
        "Characters describing this interface\n")
-       
+
 DEFSH (VTYSH_ZEBRA|VTYSH_RIPD|VTYSH_OSPFD,
        no_interface_desc_cmd,
        "no description",
@@ -1638,16 +1638,16 @@ DEFUN (vtysh_show_memory,
   unsigned int i;
   int ret = CMD_SUCCESS;
   char line[] = "show memory\n";
-  
+
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprintf (stdout, "Memory statistics for %s:\n", 
+        fprintf (stdout, "Memory statistics for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
         fprintf (stdout,"\n");
       }
-  
+
   return ret;
 }
 
@@ -1661,16 +1661,16 @@ DEFUN (vtysh_show_logging,
   unsigned int i;
   int ret = CMD_SUCCESS;
   char line[] = "show logging\n";
-  
+
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprintf (stdout,"Logging configuration for %s:\n", 
+        fprintf (stdout,"Logging configuration for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
         fprintf (stdout,"\n");
       }
-  
+
   return ret;
 }
 
@@ -2037,7 +2037,7 @@ DEFUN (vtysh_write_terminal,
     }
 
   vty_out (vty, "end%s", VTY_NEWLINE);
-  
+
   return CMD_SUCCESS;
 }
 
@@ -2112,7 +2112,7 @@ write_config_integrated(void)
   unlink (integrate_sav);
   rename (integrate_default, integrate_sav);
   free (integrate_sav);
- 
+
   fp = fopen (integrate_default, "w");
   if (fp == NULL)
     {
@@ -2131,7 +2131,7 @@ write_config_integrated(void)
 
   if (chmod (integrate_default, CONFIGFILE_MASK) != 0)
     {
-      fprintf (stdout,"%% Can't chmod configuration file %s: %s (%d)\n", 
+      fprintf (stdout,"%% Can't chmod configuration file %s: %s (%d)\n",
 	integrate_default, safe_strerror(errno), errno);
       return CMD_WARNING;
     }
@@ -2152,16 +2152,16 @@ DEFUN (vtysh_write_memory,
   int ret = CMD_SUCCESS;
   char line[] = "write memory\n";
   u_int i;
-  
+
   /* If integrated Quagga.conf explicitely set. */
   if (vtysh_writeconfig_integrated)
     return write_config_integrated();
 
   fprintf (stdout,"Building Configuration...\n");
-	  
+
   for (i = 0; i < array_size(vtysh_client); i++)
     ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
-  
+
   fprintf (stdout,"[OK]\n");
 
   return ret;
@@ -2169,7 +2169,7 @@ DEFUN (vtysh_write_memory,
 
 ALIAS (vtysh_write_memory,
        vtysh_copy_runningconfig_startupconfig_cmd,
-       "copy running-config startup-config",  
+       "copy running-config startup-config",
        "Copy from one file to another\n"
        "Copy from current system configuration\n"
        "Copy to startup configuration\n")
@@ -2455,11 +2455,11 @@ vtysh_connect (struct vtysh_client *vclient)
   ret = stat (vclient->path, &s_stat);
   if (ret < 0 && errno != ENOENT)
     {
-      fprintf  (stderr, "vtysh_connect(%s): stat = %s\n", 
-		vclient->path, safe_strerror(errno)); 
+      fprintf  (stderr, "vtysh_connect(%s): stat = %s\n",
+		vclient->path, safe_strerror(errno));
       exit(1);
     }
-  
+
   if (ret >= 0)
     {
       if (! S_ISSOCK(s_stat.st_mode))
@@ -2468,7 +2468,7 @@ vtysh_connect (struct vtysh_client *vclient)
 		   vclient->path);
 	  exit (1);
 	}
-      
+
     }
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
@@ -2506,7 +2506,7 @@ vtysh_connect (struct vtysh_client *vclient)
 }
 
 int
-vtysh_connect_all(const char *daemon_name)
+vtysh_connect_all(const char *daemon_name, const char *netns)
 {
   u_int i;
   int rc = 0;
@@ -2517,6 +2517,9 @@ vtysh_connect_all(const char *daemon_name)
       if (!daemon_name || !strcmp(daemon_name, vtysh_client[i].name))
 	{
 	  matches++;
+          if (netns && netns[0] != 0) {
+              vtysh_client[i].path = zclient_get_vtysh(netns, vtysh_client[i].name);
+          }
 	  if (vtysh_connect(&vtysh_client[i]) == 0)
 	    rc++;
 	  /* We need direct access to ripd in vtysh_exit_ripd_only. */
@@ -2827,7 +2830,7 @@ vtysh_init_vty (void)
   install_element (ENABLE_NODE, &vtysh_start_shell_cmd);
   install_element (ENABLE_NODE, &vtysh_start_bash_cmd);
   install_element (ENABLE_NODE, &vtysh_start_zsh_cmd);
-  
+
   install_element (VIEW_NODE, &vtysh_show_memory_cmd);
   install_element (ENABLE_NODE, &vtysh_show_memory_cmd);
 
