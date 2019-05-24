@@ -345,9 +345,7 @@ for daemon in %all_daemons ; do
 done
 %endif
 
-if [ -f %{_infodir}/%{name}.inf* ]; then
-	/sbin/install-info %{_infodir}/quagga.info %{_infodir}/dir
-fi
+/sbin/install-info %{_infodir}/quagga.info %{_infodir}/dir >/dev/null 2>&1
 
 # Create dummy files if they don't exist so basic functions can be used.
 if [ ! -e %{_sysconfdir}/zebra.conf ]; then
