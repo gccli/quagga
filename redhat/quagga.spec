@@ -334,37 +334,6 @@ fi
 %endif
 
 %post
-# zebra_spec_add_service <service name> <port/proto> <comment>
-# e.g. zebra_spec_add_service zebrasrv 2600/tcp "zebra service"
-
-zebra_spec_add_service ()
-{
-  # Add port /etc/services entry if it isn't already there
-  if [ -f /etc/services ] && \
-      ! %__sed -e 's/#.*$//' /etc/services | %__grep -wq $1 ; then
-    echo "$1		$2			# $3"  >> /etc/services
-  fi
-}
-
-zebra_spec_add_service zebrasrv 2600/tcp "zebra service"
-zebra_spec_add_service zebra	2601/tcp "zebra vty"
-zebra_spec_add_service ripd	2602/tcp "RIPd vty"
-zebra_spec_add_service ripngd	2603/tcp "RIPngd vty"
-zebra_spec_add_service ospfd	2604/tcp "OSPFd vty"
-zebra_spec_add_service bgpd	2605/tcp "BGPd vty"
-zebra_spec_add_service ospf6d	2606/tcp "OSPF6d vty"
-%if %{with_ospfapi}
-zebra_spec_add_service ospfapi	2607/tcp "OSPF-API"
-%endif
-%if %{with_isisd}
-zebra_spec_add_service isisd	2608/tcp "ISISd vty"
-%endif
-%if %{with_pimd}
-zebra_spec_add_service pimd	2611/tcp "PIMd vty"
-%endif
-%if %{with_nhrpd}
-zebra_spec_add_service nhrpd	2612/tcp "NHRPd vty"
-%endif
 
 %if "%{initsystem}" == "systemd"
 for daemon in %all_daemons ; do
