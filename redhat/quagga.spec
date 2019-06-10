@@ -125,7 +125,7 @@ Requires(pre):	/sbin/install-info
 Requires(preun): /sbin/install-info
 Requires(post):	/sbin/install-info
 BuildRequires:	autoconf patch libcap-devel groff
-BuildRequires:	perl-generators pkgconfig
+BuildRequires:	pkgconfig
 %if %{with_texi2html}
 BuildRequires:	texi2html
 %endif
