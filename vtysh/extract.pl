@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#! /bin/perl
 ##
 ## vtysh/extract.pl.  Generated from extract.pl.in by configure.
 ##

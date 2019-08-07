@@ -46,7 +46,7 @@
 %{expand: %%global rpmversion %(echo '1.2.4' | tr [:blank:]- _ )}
 %define		quaggaversion	1.2.4
 
-#### Check version of texi2html
+#### Check version of texi2html 
 # Old versions don't support "--number-footnotes" option.
 %if %{with_texi2html}
 	%{expand: %%global texi2htmlversion %(type texi2html >/dev/null 2>&1 && (rpm -q --qf '%%{VERSION}' texi2html | cut -d. -f1) || echo 0 )}
@@ -110,12 +110,12 @@
 %{!?keep_build:		%global		keep_build	0 }
 
 #release sub-revision (the two digits after the CONFDATE)
-%{!?release_rev:	%global		release_rev	bindns }
+%{!?release_rev:	%global		release_rev	01 }
 
 Summary: Routing daemon
 Name:			quagga
 Version:		%{rpmversion}
-Release:		%{release_rev}%{?dist}
+Release:		20190807%{release_rev}%{?dist}
 License:		GPLv2+
 Group:			System Environment/Daemons
 Source0:		https://download.savannah.gnu.org/releases/quagga/%{name}-%{quaggaversion}.tar.gz
@@ -125,7 +125,7 @@ Requires(pre):	/sbin/install-info
 Requires(preun): /sbin/install-info
 Requires(post):	/sbin/install-info
 BuildRequires:	autoconf patch libcap-devel groff
-BuildRequires:	pkgconfig
+BuildRequires:	perl-generators pkgconfig
 %if %{with_texi2html}
 BuildRequires:	texi2html
 %endif
@@ -161,7 +161,7 @@ BuildRoot:			%{_tmppath}/%{name}-%{version}-root
 %define __perl_requires %{zeb_rh_src}/quagga-filter-perl-requires.sh
 
 %description
-Quagga is a free software routing protocol suite.
+Quagga is a free software routing protocol suite. 
 
 Quagga supports BGP, OSPFv2, OSPFv3, ISIS, RIP, RIPng, PIM-SSM and NHRP.
 
@@ -334,6 +334,37 @@ fi
 %endif
 
 %post
+# zebra_spec_add_service <service name> <port/proto> <comment>
+# e.g. zebra_spec_add_service zebrasrv 2600/tcp "zebra service"
+
+zebra_spec_add_service ()
+{
+  # Add port /etc/services entry if it isn't already there 
+  if [ -f /etc/services ] && \
+      ! %__sed -e 's/#.*$//' /etc/services | %__grep -wq $1 ; then
+    echo "$1		$2			# $3"  >> /etc/services
+  fi
+}
+
+zebra_spec_add_service zebrasrv 2600/tcp "zebra service"
+zebra_spec_add_service zebra	2601/tcp "zebra vty"
+zebra_spec_add_service ripd	2602/tcp "RIPd vty"
+zebra_spec_add_service ripngd	2603/tcp "RIPngd vty"
+zebra_spec_add_service ospfd	2604/tcp "OSPFd vty"
+zebra_spec_add_service bgpd	2605/tcp "BGPd vty"
+zebra_spec_add_service ospf6d	2606/tcp "OSPF6d vty"
+%if %{with_ospfapi}
+zebra_spec_add_service ospfapi	2607/tcp "OSPF-API"
+%endif
+%if %{with_isisd}
+zebra_spec_add_service isisd	2608/tcp "ISISd vty"
+%endif
+%if %{with_pimd}
+zebra_spec_add_service pimd	2611/tcp "PIMd vty"
+%endif
+%if %{with_nhrpd}
+zebra_spec_add_service nhrpd	2612/tcp "NHRPd vty"
+%endif
 
 %if "%{initsystem}" == "systemd"
 for daemon in %all_daemons ; do
@@ -345,7 +376,9 @@ for daemon in %all_daemons ; do
 done
 %endif
 
-/sbin/install-info %{_infodir}/quagga.info %{_infodir}/dir >/dev/null 2>&1
+if [ -f %{_infodir}/%{name}.inf* ]; then
+	/sbin/install-info %{_infodir}/quagga.info %{_infodir}/dir
+fi
 
 # Create dummy files if they don't exist so basic functions can be used.
 if [ ! -e %{_sysconfdir}/zebra.conf ]; then
@@ -393,7 +426,7 @@ if [ "$1" -ge 1 ]; then
 		running_watchquagga="$restart_watchquagga"
 		restart_watchquagga=no
 	%endif
-
+	
 	%if "%{initsystem}" == "systemd"
 		##
 		## Systemd Version
@@ -441,10 +474,10 @@ if [ "$1" -ge 1 ]; then
 		done
 		%if %{with_watchquagga}
 			# Start watchquagga last.
-			# Avoid postun scriptlet error if watchquagga is not running.
+			# Avoid postun scriptlet error if watchquagga is not running. 
 			[ "$running_watchquagga" = yes ] && \
 				/etc/rc.d/init.d/watchquagga start >/dev/null 2>&1 || :
-		%endif
+		%endif	
 	%endif
 fi
 
@@ -489,7 +522,7 @@ rm -rf %{buildroot}
 %doc ChangeLog INSTALL NEWS README REPORTING-BUGS SERVICES TODO
 %if 0%{?quagga_user:1}
 %dir %attr(751,%quagga_user,%quagga_user) %{_sysconfdir}
-%dir %attr(750,%quagga_user,%quagga_user) /var/log/quagga
+%dir %attr(750,%quagga_user,%quagga_user) /var/log/quagga 
 %dir %attr(751,%quagga_user,%quagga_user) /var/run/quagga
 %else
 %dir %attr(750,root,root) %{_sysconfdir}
@@ -608,7 +641,7 @@ rm -rf %{buildroot}
 - Remove support for old fedora 4/5
 - Fix for package nameing
 - Fix Weekdays of previous changelogs (bogus dates)
-- Add conditional logic to only build tex footnotes with supported texi2html
+- Add conditional logic to only build tex footnotes with supported texi2html 
 - Added pimd to files section and fix double listing of /var/lib*/quagga
 - Numerous fixes to unify upstart/systemd startup into same spec file
 - Only allow use of watchquagga for non-systemd systems. no need with systemd
@@ -701,7 +734,7 @@ rm -rf %{buildroot}
 - walk up tree - 17218
 - ospfd NSSA fixes - 16681
 - ospfd nsm fixes - 16824
-- ospfd OLSA fixes and new feature - 16823
+- ospfd OLSA fixes and new feature - 16823 
 - KAME and ifindex fixes - 16525
 - spec file changes to allow redhat files to be in tree
 
@@ -759,7 +792,7 @@ rm -rf %{buildroot}
 * Tue Feb  6 2001 Tim Powers <timp@redhat.com>
 - built for Powertools
 
-* Sun Feb  4 2001 Pekka Savola <pekkas@netcore.fi>
+* Sun Feb  4 2001 Pekka Savola <pekkas@netcore.fi> 
 - Hacked up from PLD Linux 0.90-1, Mandrake 0.90-1mdk and one from zebra.org.
 - Update to 0.91a
 - Very heavy modifications to init.d/*, .spec, pam, i18n, logrotate, etc.
