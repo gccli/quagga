@@ -110,7 +110,7 @@
 %{!?keep_build:		%global		keep_build	0 }
 
 #release sub-revision (the two digits after the CONFDATE)
-%{!?release_rev:	%global		release_rev   .1}
+%{!?release_rev:	%global		release_rev   .2 }
 
 Summary: Routing daemon
 Name:			quagga

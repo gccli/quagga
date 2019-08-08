@@ -481,7 +481,7 @@ main (int argc, char **argv)
   pid_output (pid_file);
 
   /* Make bgp vty socket. */
-  vty_serv_sock (vty_addr, vty_port, BGP_VTYSH_PATH);
+  vty_serv_sock (vty_addr, vty_port, vty_path);
 
   /* Print banner. */
   zlog_notice ("BGPd %s starting: vty@%d, bgp@%s:%d pid %d", QUAGGA_VERSION,
