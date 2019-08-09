@@ -1408,5 +1408,5 @@ void zclient_setprocname(char *argv[], const char *ns, const char *name)
     strncpy(argv[0], buffer, strlen(buffer));
     rem = &argv[0][strlen(buffer)];
     memset(rem, 0, strlen(rem));
-    prctl(PR_SET_BUFFER, buffer, 0, 0, 0);
+    prctl(PR_SET_NAME, buffer, 0, 0, 0);
 }
