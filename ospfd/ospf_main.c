@@ -206,6 +206,7 @@ main (int argc, char **argv)
       pid_file = zclient_get_pidfile(netns, "ospfd");
       zclient_serv_path_set(zclient_get_socket(netns, "zebra"));
       vty_path = zclient_get_vtysh(netns, "ospfd");
+      zclient_setprocname(argv, netns, "ospfdd");
   }
 
   while (1)

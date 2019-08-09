@@ -1399,3 +1399,14 @@ char *zclient_get_vtysh(const char *ns, const char *daemon)
 
     return buffer;
 }
+
+void zclient_setprocname(char *argv[], const char *ns, const char *name)
+{
+    char *rem, buffer[128];
+
+    snprintf(buffer, sizeof(buffer), "%s-%s", name, ns);
+    strncpy(argv[0], buffer, strlen(buffer));
+    rem = &argv[0][strlen(buffer)];
+    memset(rem, 0, strlen(rem));
+    prctl(PR_SET_BUFFER, buffer, 0, 0, 0);
+}

@@ -366,6 +366,7 @@ main (int argc, char **argv)
       pid_file = zclient_get_pidfile(netns, "bgpd");
       zclient_serv_path_set(zclient_get_socket(netns, "zebra"));
       vty_path = zclient_get_vtysh(netns, "bgpd");
+      zclient_setprocname(argv, netns, "bgpd");
   }
 
   /* Command line argument treatment. */

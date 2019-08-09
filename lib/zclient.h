@@ -232,5 +232,5 @@ extern char *zclient_get_config(const char *ns, const char *daemon);
 extern char *zclient_get_pidfile(const char *ns, const char *daemon);
 extern char *zclient_get_socket(const char *ns, const char *daemon);
 extern char *zclient_get_vtysh(const char *ns, const char *daemon);
-
+extern void zclient_setprocname(char *argv[], const char *ns, const char *domain);
 #endif /* _ZEBRA_ZCLIENT_H */

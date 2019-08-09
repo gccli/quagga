@@ -313,6 +313,7 @@ main (int argc, char **argv)
       pid_file = zclient_get_pidfile(netns, "zebra");
       zserv_path = zclient_get_socket(netns, "zebra");
       vty_path = zclient_get_vtysh(netns, "zebra");
+      zclient_setprocname(argv, netns, "zebra");
   }
 
   while (1)
