@@ -32,7 +32,7 @@
 #include "zclient.h"
 #include "memory.h"
 #include "table.h"
-
+#include <sys/prctl.h>
 /* Zebra client events. */
 enum event {ZCLIENT_SCHEDULE, ZCLIENT_READ, ZCLIENT_CONNECT};
 
