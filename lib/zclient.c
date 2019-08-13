@@ -1402,6 +1402,7 @@ char *zclient_get_vtysh(const char *ns, const char *daemon)
 
 void zclient_setprocname(char *argv[], const char *ns, const char *name)
 {
+    /*
     char *rem, buffer[128];
 
     snprintf(buffer, sizeof(buffer), "%s-%s", name, ns);
@@ -1409,4 +1410,5 @@ void zclient_setprocname(char *argv[], const char *ns, const char *name)
     rem = &argv[0][strlen(buffer)];
     memset(rem, 0, strlen(rem));
     prctl(PR_SET_NAME, buffer, 0, 0, 0);
+    */
 }
