@@ -1,0 +1,8 @@
+function start_router() {
+  name=$1
+  if [ "${name}x" == "x" ]; then
+     echo "Usage: $0 <name> <options>" && exit 0
+  fi
+
+  docker run --name $name --hostname $name inetlinux/quagga
+}
