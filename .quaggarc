@@ -1,8 +1,19 @@
-function start_router() {
+
+function router_start() {
   name=$1
   if [ "${name}x" == "x" ]; then
      echo "Usage: $0 <name> <options>" && exit 0
   fi
 
-  docker run --name $name --hostname $name inetlinux/quagga
+  mkdir -p /srv/$name
+  docker run -d --privileged --rm --name $name --hostname $name \
+         -v $name:/etc/quagga inetlinux/quagga
+}
+
+function router_sh() {
+  if [ "${name}x" == "x" ]; then
+     echo "Usage: $0 <name> <options>" && exit 0
+  fi
+
+  ocker exec -it $name vtysh
 }
